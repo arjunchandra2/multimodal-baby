@@ -11,6 +11,9 @@ from torchinfo import summary
 from multimodal.multimodal_data_module import MultiModalDataModule
 from multimodal.multimodal_saycam_data_module import MultiModalSAYCamDataModule
 from multimodal.coco_captions_data_module import COCOCaptionsDataModule
+
+from multimodal.multimodal_saycamllava_data_module import MultiModalSAYCamLLaVADataModule
+
 from multimodal.multimodal import VisionEncoder, TextEncoder, MultiModalModel, LanguageModel
 from multimodal.multimodal_lit import MultiModalLitModel
 
@@ -29,6 +32,9 @@ def _setup_parser():
     MultiModalDataModule.add_to_argparse(data_group)
     MultiModalSAYCamDataModule.add_additional_to_argparse(data_group)
     COCOCaptionsDataModule.add_additional_to_argparse(data_group)
+    
+    #don't add anything 
+    MultiModalSAYCamLLaVADataModule.add_additional_to_argparse(data_group)
 
     model_group = parser.add_argument_group("Model Args")
     VisionEncoder.add_to_argparse(model_group)
@@ -58,10 +64,12 @@ def _setup_parser():
 def main():
     # parse args
     parser = _setup_parser()
+    parser.print_help()
     args = parser.parse_args()
+    
 
     # checkpoint paths
-    ckpt_dir = Path('checkpoints') / args.exp_name
+    ckpt_dir = Path('/projectnb/ivc-ml/ac25/Baby LLaVA/multimodal-baby/arjun_tests')
     if str(args.resume_ckpt) == "last":
         args.resume_ckpt = ckpt_dir / 'last.ckpt'
 
@@ -69,15 +77,23 @@ def main():
     pl.seed_everything(args.seed)
 
     # set up data module and models
-    DataModuleClass = {
-        "saycam": MultiModalSAYCamDataModule,
-        "coco": COCOCaptionsDataModule,
-    }[args.dataset]
+    # DataModuleClass = {
+    #     "saycam": MultiModalSAYCamDataModule,
+    #     "coco": COCOCaptionsDataModule,
+    # }[args.dataset]
+
+    DataModuleClass = MultiModalSAYCamLLaVADataModule
+
     data = DataModuleClass(args)
     vocab = data.read_vocab()
+
+
+    #Vision Encoder is loaded from HuggingFace, text_encoder is built locally 
     vision_encoder = VisionEncoder(args=args)
     text_encoder = TextEncoder(
         vocab, image_feature_map_dim=vision_encoder.last_cnn_out_dim, args=args)
+
+    #Wraps MultiModalModel
     lit_model = MultiModalLitModel(vision_encoder, text_encoder, args)
 
     # setup checkpoint callback
@@ -99,7 +115,10 @@ def main():
                                                     checkpoint_callback],
                                                 logger=wandb_logger)
     else:
-        trainer = pl.Trainer.from_argparse_args(args)
+        trainer = pl.Trainer.from_argparse_args(args,
+                                                enable_checkpointing=args.checkpoint_callback,
+                                                callbacks=[
+                                                    checkpoint_callback])
 
     print(args)
 

@@ -9,4 +9,4 @@
 # python train.py --batch_size=16 --gpus=1 --num_workers=8 --checkpoint_callback=False --logger=False --pretrained_cnn --finetune_cnn --multiple_frames --augment_frames --fast_dev_run --text_encoder="embedding" 
 
 # random init
-python train.py --batch_size=8 --gpus=1 --num_workers=8 --checkpoint_callback=False --logger=False --multiple_frames --fast_dev_run --text_encoder="embedding" 
+python train.py --batch_size=8 --gpus=1 --num_workers=8 --max_epochs=2 --checkpoint_callback=True --logger=False --text_encoder="embedding" 

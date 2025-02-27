@@ -7,6 +7,9 @@ replacing  anything annotated as inaudible and any tokens with a frequency less 
 with an <UNK> token, resulting in a vocabulary size of 2350. All transcripts were lowercased 
 (although in some of our figures some child-directed utterances are capitalized for ease of reading). 
 All utterances were truncated to a maximum length of 25 tokens.
+
+- Note in multimodal/multimodal_saycam_data_module.py they seem to tokenize based on whitespace rather 
+than using spaCy but results here are pretty bad if I just do that
 """
 
 from tqdm import tqdm

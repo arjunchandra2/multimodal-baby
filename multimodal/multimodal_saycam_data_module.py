@@ -11,24 +11,25 @@ import shutil
 import time
 import cv2 as cv
 
-import imageio
+#import imageio
 from PIL import Image
 import numpy as np
 import pandas as pd
-from gsheets import Sheets
+#from gsheets import Sheets
 import torch
 
 import os.path
-from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
+#from googleapiclient.discovery import build
+#from google_auth_oauthlib.flow import InstalledAppFlow
+#from google.auth.transport.requests import Request
+#from google.oauth2.credentials import Credentials
 
 from multimodal.multimodal_data_module import MultiModalDataset, \
     MultiModalDataModule, read_vocab, load_data, load_and_print_info, \
     PAD_TOKEN, UNK_TOKEN, SOS_TOKEN, EOS_TOKEN, \
     PAD_TOKEN_ID, UNK_TOKEN_ID, SOS_TOKEN_ID, EOS_TOKEN_ID, \
     IMAGE_H, IMAGE_W
+    
 from multimodal.utils import *
 
 import spacy
@@ -1230,7 +1231,7 @@ def _create_vocab(freq_threshold=3):
         with open(TRAIN_METADATA_FILENAME) as f:
             train_dict = json.load(f)
 
-        # get token frequency
+        # get token frequency - LOOKS LIKE TOKENIZATION IS JUST BASED ON WHITESPACE?
         for example in train_dict["data"]:
             utterance = example["utterance"]
             tokens = utterance.split()

@@ -363,11 +363,13 @@ class MultiModalLitModel(pl.LightningModule):
         return ret
 
     def joint_loss_epoch_end(self, outputs, stage, log, eval_textgen=False):
+        #print(outputs)
         def mean_over_examples(name):
             # mean over examples
             n_examples = 0
             value_sum = 0.
             for output in outputs:
+                #print(output)
                 batch_size = output['batch_size']
                 value = output[name].item()
                 n_examples += batch_size
@@ -503,8 +505,11 @@ class MultiModalLitModel(pl.LightningModule):
     def validation_test_epoch_end(self, stage, outputs):
         # only deal with outputs of the first dataset
         log = functools.partial(self.log, on_step=False, on_epoch=True)
+
+        #CHANGED THIS HERE: outputs[0] -> outputs since we only have 1 val dataset instead
+        #of 1 val + 1 eval dataset in val step
         return self.joint_loss_epoch_end(
-            outputs[0], stage, log, eval_textgen=self.eval_textgen)
+            outputs, stage, log, eval_textgen=self.eval_textgen)
 
     def validation_step(self, batch, batch_idx, dataloader_idx=0):
         if dataloader_idx < N_VAL_DATALOADERS_PER_SPLIT:  # as normal
@@ -516,6 +521,7 @@ class MultiModalLitModel(pl.LightningModule):
                 dataloader_idx=dataloader_idx - N_VAL_DATALOADERS_PER_SPLIT)
 
     def validation_epoch_end(self, outputs):
+        #print(outputs)
         self.validation_test_epoch_end(
             'val', outputs[:N_VAL_DATALOADERS_PER_SPLIT])
         if len(outputs) > N_VAL_DATALOADERS_PER_SPLIT:

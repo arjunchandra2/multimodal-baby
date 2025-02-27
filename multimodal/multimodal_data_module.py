@@ -28,7 +28,7 @@ VAL_BATCH_SIZE = 16
 NUM_WORKERS = 4
 EVAL_INCLUDE_SOS_EOS = False
 
-# evaluation arguments
+# evaluation arguments - may need to change this ? 
 N_VAL_DATALOADERS_PER_SPLIT = 2
 TEST_WHILE_VAL = False
 EVAL_TYPE = "image"
