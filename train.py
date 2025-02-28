@@ -4,7 +4,7 @@ from pathlib import Path
 import numpy as np
 import torch
 import pytorch_lightning as pl
-from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 from pytorch_lightning.loggers import WandbLogger
 from torchinfo import summary
 
@@ -69,7 +69,7 @@ def main():
     
 
     # checkpoint paths
-    ckpt_dir = Path('/projectnb/ivc-ml/ac25/Baby LLaVA/multimodal-baby/arjun_tests')
+    ckpt_dir = Path('/projectnb/ivc-ml/ac25/Baby LLaVA/multimodal-baby') / args.exp_name
     if str(args.resume_ckpt) == "last":
         args.resume_ckpt = ckpt_dir / 'last.ckpt'
 
@@ -82,6 +82,7 @@ def main():
     #     "coco": COCOCaptionsDataModule,
     # }[args.dataset]
 
+    #Dropped dataset parameter since we will only use one dataset
     DataModuleClass = MultiModalSAYCamLLaVADataModule
 
     data = DataModuleClass(args)
@@ -104,6 +105,13 @@ def main():
         dirpath=ckpt_dir,
         filename='{epoch}')
 
+    early_stopping_callback = EarlyStopping(
+        monitor='val_loss',  # Monitor validation loss
+        patience=5,  # Stop if no improvement for 5 consecutive epochs
+        verbose=True,
+        mode='min'  # 'min' because lower val_loss is better
+    )
+
     # create trainer (with checkpoint and logger if specified)
     if args.logger:
         # add checkpoint callback and wandb logging
@@ -112,13 +120,13 @@ def main():
         trainer = pl.Trainer.from_argparse_args(args,
                                                 enable_checkpointing=args.checkpoint_callback,
                                                 callbacks=[
-                                                    checkpoint_callback],
+                                                    checkpoint_callback, early_stopping_callback],
                                                 logger=wandb_logger)
     else:
         trainer = pl.Trainer.from_argparse_args(args,
                                                 enable_checkpointing=args.checkpoint_callback,
                                                 callbacks=[
-                                                    checkpoint_callback])
+                                                    checkpoint_callback, early_stopping_callback])
 
     print(args)
 
